@@ -1,4 +1,5 @@
 import wx
+import csv
 
 #pylint: disable=maybe-no-member
 
@@ -207,16 +208,19 @@ class PanelBienvenida(wx.Panel):
         self.SetSizer(vbox)
 
 class FramePrincipal(wx.Frame):
-    def __init__(self, parent, title):
+    def __init__(self, parent, title, style):
         # asegurar que se llame al __init__ de los padres
         super(FramePrincipal, self).__init__(parent, title=title,
-                                        size=(450,400))
+                                        size=(450,400), style=style)
+        #montamos los componentess de la ventana
         self.Initialize()
+        #self.listadoJuegos
 
     def Initialize(self):
         
         #creamos la barra del menu
         self.CreateMenuBar()
+        #creamos paneles
         self.CreatePanels()
 
         #colocamos el icono a la ventana
@@ -226,8 +230,10 @@ class FramePrincipal(wx.Frame):
 
         #centramos en la pantalla
         self.Centre(True)
+        #mostramos --no necesario realmente, pero por si acaso :)
         self.Show()
 
+    #creamos los paneles y los añadimos a la ventana principal
     def CreatePanels(self):
         
         self.caja = wx.BoxSizer(wx.VERTICAL)
@@ -255,9 +261,9 @@ class FramePrincipal(wx.Frame):
          #creamos un elemento menu para cargar/guardar archivos y salir
         self.menuArchivo = wx.Menu()
 
-        self.menuArchivo.Append(-1, "Cargar Datos")
+        itemLoad = self.menuArchivo.Append(-1, "Cargar Datos")
 
-        self.menuArchivo.Append(2, "Guardar datos")
+        self.menuArchivo.Append(3, "Guardar datos")
 
         self.menuArchivo.AppendSeparator()
 
@@ -276,10 +282,7 @@ class FramePrincipal(wx.Frame):
         barraDeMenu.Append(self.menuPaneles, "Opciones")
 
         #deshabilitamos los botones que requieren que tengamos cargado un fichero
-        self.menuPaneles.Enable(1, False)
-        self.menuPaneles.Enable(2, False)
-
-        self.menuArchivo.Enable(2, False)
+        self.DesactivarBotonesBarra()
 
         # asignamos la barra de menu al frame
         self.SetMenuBar(barraDeMenu)
@@ -288,9 +291,23 @@ class FramePrincipal(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnSalir,  itemSalir)
         self.Bind(wx.EVT_MENU, self.OnVisualizar,  itemVisualizar)
         self.Bind(wx.EVT_MENU, self.OnAlta,  itemAlta)
+        self.Bind(wx.EVT_MENU, self.OnLoad,  itemLoad)
+    
+    def ActivarBotonesBarra(self):
+        self.menuPaneles.Enable(1, True)
+        self.menuPaneles.Enable(2, True)
+
+        self.menuArchivo.Enable(3, True)
+
+    def DesactivarBotonesBarra(self):
+        self.menuPaneles.Enable(1, False)
+        self.menuPaneles.Enable(2, False)
+
+        self.menuArchivo.Enable(3, False)
 
     #metodoque se llama al presionar el boton salir del menu
     def OnSalir(self, event):
+        self.csvfile.close()
         self.Close(True)
     
     def OnVisualizar(self, event):
@@ -305,10 +322,48 @@ class FramePrincipal(wx.Frame):
         self.panelBienvenida.Hide()
         self.Layout()
 
+    def OnLoad(self, event):
+        openFileDialog = wx.FileDialog(None, message='Cargar el archivo csv.',
+            wildcard='CSV (*.csv)|*.csv|All Files|*',
+            style=wx.FD_OPEN)
+
+        try:
+            if openFileDialog.ShowModal() == wx.ID_CANCEL:
+                return wx.ID_CANCEL
+        except Exception:
+            wx.LogError('Save failed!')
+            raise
+        
+        self.path = openFileDialog.GetPath()
+        
+        try:
+            self.csvfile = open(self.path, newline='')
+            self.listadoJuegos = csv.reader(self.csvfile, delimiter=',', quotechar='|')
+
+            #contamos cuantos elementos tiene el fichero
+            self.contadorJuegos = 0
+            for row in self.listadoJuegos:
+                self.contadorJuegos+=1
+            #print("El listado contiene " + str(self.contadorJuegos) + " juegos")
+
+            self.ActivarBotonesBarra()
+        except:
+            wx.MessageBox("No se ha podido cargar el fichero", "Error", wx.OK | wx.ICON_ERROR)
+
+        
+            
+
+        openFileDialog.Destroy()
+        
+
+
 if __name__ == '__main__':
     # Cuando este modulo se ejecuta (no se importa), crear la aplicacion,
     # el frame, mostrarlo e iniciar el bucle de eventos.
     app = wx.App()
-    frm = FramePrincipal(None, title='Gestion de videojuegos')
+
+    estilo = wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX
+
+    frm = FramePrincipal(None, title='Gestion de videojuegos', style=estilo)
     frm.Show()
     app.MainLoop()
