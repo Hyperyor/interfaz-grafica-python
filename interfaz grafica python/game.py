@@ -6,7 +6,8 @@ import csv
 class PanelVisualizar(wx.Panel):
     def __init__(self, parent, id):
         wx.Panel.__init__(self, parent, id)
-        
+        self.ventanaPrincipal = parent
+        self.elementoActual = 0
         self.inicializar()
 
     def inicializar(self):
@@ -32,12 +33,12 @@ class PanelVisualizar(wx.Panel):
         #labTit.SetFont(font)
         hboxTitulo.Add(labTit, flag=wx.RIGHT, border=8)
 
-        textTitulo = wx.TextCtrl(self)
+        self.textTitulo = wx.TextCtrl(self)
 
         #para que no se pueda modificar
         #textTitulo.DoEnable(False)
 
-        hboxTitulo.Add(textTitulo, proportion=1)
+        hboxTitulo.Add(self.textTitulo, proportion=1)
 
         vbox.Add(hboxTitulo, flag=wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP,  border = 10)
 
@@ -50,9 +51,9 @@ class PanelVisualizar(wx.Panel):
         #labTit.SetFont(font)
         hboxPubli.Add(labPub, flag=wx.RIGHT, border=8)
 
-        textPubli = wx.TextCtrl(self)
+        self.textPubli = wx.TextCtrl(self)
 
-        hboxPubli.Add(textPubli, proportion=1)
+        hboxPubli.Add(self.textPubli, proportion=1)
 
         vbox.Add(hboxPubli, flag=wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP,  border = 10)
 
@@ -65,9 +66,9 @@ class PanelVisualizar(wx.Panel):
         #labTit.SetFont(font)
         hboxPrecio.Add(labPre, flag=wx.RIGHT, border=8)
 
-        textPre = wx.TextCtrl(self)
+        self.textPre = wx.TextCtrl(self)
 
-        hboxPrecio.Add(textPre, proportion=1)
+        hboxPrecio.Add(self.textPre, proportion=1)
 
         vbox.Add(hboxPrecio, flag=wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP,  border = 10)
 
@@ -76,19 +77,64 @@ class PanelVisualizar(wx.Panel):
         #botones--------------------------------------------
         hboxBotones = wx.BoxSizer(wx.HORIZONTAL)
 
-        btn1 = wx.Button(self, label='Anterior', size = (70,30))
-        hboxBotones.Add(btn1)
-        btn2 = wx.Button(self, label='Siguiente', size = (70,30))
-        hboxBotones.Add(btn2)
+        self.btn1 = wx.Button(self, label='Anterior', size = (70,30))
+        hboxBotones.Add(self.btn1)
+        self.btn2 = wx.Button(self, label='Siguiente', size = (70,30))
+        hboxBotones.Add(self.btn2)
+
+        self.Bind(wx.EVT_BUTTON, self.ShowPreviousElement,  self.btn1)
+        self.Bind(wx.EVT_BUTTON, self.ShowNextElement,  self.btn2)
+
+        #self.ControlDeBotones()
 
         vbox.Add(hboxBotones, flag=wx.ALIGN_CENTER|wx.BOTTOM,  border = 10)
 
         self.SetSizer(vbox)
+    
+    def ShowPreviousElement(self, event):
+        self.MostrarDatos(self.elementoActual-1)
+        self.elementoActual -= 1 
+        self.ControlDeBotones()
+    def ShowNextElement(self, event):
+        self.MostrarDatos(self.elementoActual+1)
+        self.elementoActual += 1
+        self.ControlDeBotones()
+
+    def ControlDeBotones(self):
+        if self.elementoActual == 0:
+            self.btn1.Enable(False)
+
+            if self.elementoActual == len(self.ventanaPrincipal.listaJuegos) - 1:
+                self.btn2.Enable(False)
+            else:
+                self.btn2.Enable(True)
+
+        else:
+            self.btn1.Enable(True)
+
+            if self.elementoActual == len(self.ventanaPrincipal.listaJuegos) - 1:
+                self.btn2.Enable(False)
+            else:
+                self.btn2.Enable(True)
+
+    def MostrarPrimero(self):
+        self.elementoActual = 0
+        self.MostrarDatos(self.elementoActual)
+        self.ControlDeBotones()
+        
+
+    def MostrarDatos(self, pos):
+
+        row = self.ventanaPrincipal.listaJuegos[pos]
+        
+        self.textTitulo.SetValue(row[0])
+        self.textPubli.SetValue(row[1])
+        self.textPre.SetValue(row[2])
 
 class PanelAlta(wx.Panel):
     def __init__(self, parent, id):
         wx.Panel.__init__(self, parent, id)
-        
+        self.ventanaPrincipal = parent
         self.inicializar()
 
     def inicializar(self):
@@ -114,12 +160,12 @@ class PanelAlta(wx.Panel):
         #labTit.SetFont(font)
         hboxTitulo.Add(labTit, flag=wx.RIGHT, border=8)
 
-        textTitulo = wx.TextCtrl(self)
+        self.textTitulo = wx.TextCtrl(self)
 
         #para que no se pueda modificar
         #textTitulo.DoEnable(False)
 
-        hboxTitulo.Add(textTitulo, proportion=1)
+        hboxTitulo.Add(self.textTitulo, proportion=1)
 
         vbox.Add(hboxTitulo, flag=wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP,  border = 10)
 
@@ -132,9 +178,9 @@ class PanelAlta(wx.Panel):
         #labTit.SetFont(font)
         hboxPubli.Add(labPub, flag=wx.RIGHT, border=8)
 
-        textPubli = wx.TextCtrl(self)
+        self.textPubli = wx.TextCtrl(self)
 
-        hboxPubli.Add(textPubli, proportion=1)
+        hboxPubli.Add(self.textPubli, proportion=1)
 
         vbox.Add(hboxPubli, flag=wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP,  border = 10)
 
@@ -147,9 +193,9 @@ class PanelAlta(wx.Panel):
         #labTit.SetFont(font)
         hboxPrecio.Add(labPre, flag=wx.RIGHT, border=8)
 
-        textPre = wx.TextCtrl(self)
+        self.textPre = wx.TextCtrl(self)
 
-        hboxPrecio.Add(textPre, proportion=1)
+        hboxPrecio.Add(self.textPre, proportion=1)
 
         vbox.Add(hboxPrecio, flag=wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP,  border = 10)
 
@@ -158,14 +204,56 @@ class PanelAlta(wx.Panel):
         #botones--------------------------------------------
         hboxBotones = wx.BoxSizer(wx.HORIZONTAL)
 
-        btn1 = wx.Button(self, label='Aceptar', size = (70,30))
-        hboxBotones.Add(btn1)
-        btn2 = wx.Button(self, label='Cancelar', size = (70,30))
-        hboxBotones.Add(btn2)
+        self.btn1 = wx.Button(self, label='Aceptar', size = (70,30))
+        hboxBotones.Add(self.btn1)
+        self.btn2 = wx.Button(self, label='Cancelar', size = (70,30))
+        hboxBotones.Add(self.btn2)
+
+        self.Bind(wx.EVT_BUTTON, self.DarDeAlta,  self.btn1)
+        self.Bind(wx.EVT_BUTTON, self.CancelarAlta,  self.btn2)
 
         vbox.Add(hboxBotones, flag=wx.ALIGN_CENTER|wx.BOTTOM,  border = 10)
 
         self.SetSizer(vbox)
+    
+    def DarDeAlta(self, event):
+
+        if self.DatosCorrectos():
+            print("Datos correctos")
+            nuevoJuego = []
+            nuevoJuego.append(self.textTitulo.GetValue())
+            nuevoJuego.append(self.textPubli.GetValue())
+            nuevoJuego.append(self.textPre.GetValue())
+
+            self.ventanaPrincipal.listaJuegos.append(nuevoJuego)
+            self.ventanaPrincipal.contadorJuegos+=1
+
+            wx.MessageBox("Alta realizada correctamente", "Alta correcta", wx.OK | wx.ICON_INFORMATION)
+        else:
+            wx.MessageBox("Datos introducidos incorrectos", "Error", wx.OK | wx.ICON_ERROR)
+
+        self.ResetPanel()
+    
+    def DatosCorrectos(self):
+        try:
+            if self.textTitulo.GetValue() != "":
+                if int(self.textPubli.GetValue()) >= 1982:
+                    if float(self.textPre.GetValue()) > 0:
+                        return True
+        except ValueError:
+            return False
+        
+        return False
+
+
+    def CancelarAlta(self, event):
+        self.ResetPanel()
+        self.ventanaPrincipal.CambiarAVisualizar()
+
+    def ResetPanel(self):
+        self.textPre.SetValue("")
+        self.textPubli.SetValue("")
+        self.textTitulo.SetValue("")
 
 class PanelBienvenida(wx.Panel):
     def __init__(self, parent, id):
@@ -263,7 +351,7 @@ class FramePrincipal(wx.Frame):
 
         itemLoad = self.menuArchivo.Append(-1, "Cargar Datos")
 
-        self.menuArchivo.Append(3, "Guardar datos")
+        itemSave = self.menuArchivo.Append(3, "Guardar datos")
 
         self.menuArchivo.AppendSeparator()
 
@@ -292,6 +380,7 @@ class FramePrincipal(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnVisualizar,  itemVisualizar)
         self.Bind(wx.EVT_MENU, self.OnAlta,  itemAlta)
         self.Bind(wx.EVT_MENU, self.OnLoad,  itemLoad)
+        self.Bind(wx.EVT_MENU, self.OnSave,  itemSave)
     
     def ActivarBotonesBarra(self):
         self.menuPaneles.Enable(1, True)
@@ -307,14 +396,11 @@ class FramePrincipal(wx.Frame):
 
     #metodoque se llama al presionar el boton salir del menu
     def OnSalir(self, event):
-        self.csvfile.close()
+        #self.csvfile.close()
         self.Close(True)
     
     def OnVisualizar(self, event):
-        self.panelVisualizar.Show()
-        self.panelAlta.Hide()
-        self.panelBienvenida.Hide()
-        self.Layout()
+        self.CambiarAVisualizar()
         
     def OnAlta(self, event):
         self.panelAlta.Show()
@@ -338,20 +424,67 @@ class FramePrincipal(wx.Frame):
         
         try:
             self.csvfile = open(self.path, newline='')
-            self.listadoJuegos = csv.reader(self.csvfile, delimiter=',', quotechar='|')
+            self.datos = csv.reader(self.csvfile, delimiter=',', quotechar='|')
 
             #contamos cuantos elementos tiene el fichero
             self.contadorJuegos = 0
-            for row in self.listadoJuegos:
+            self.listaJuegos = []
+
+            for row in self.datos:
+                print(row[0])
+                #aniadimos el campo a la lista
+                self.listaJuegos.append(row)
                 self.contadorJuegos+=1
             #print("El listado contiene " + str(self.contadorJuegos) + " juegos")
-
+            self.CambiarAVisualizar()
             self.ActivarBotonesBarra()
+
+            var = wx.MessageBox("Carga correcta", "Carga de datos", wx.OK | wx.CANCEL | wx.ICON_INFORMATION)
+            
+            #4 = ok, 16 = cancel
+            #print(var)
+            self.csvfile.close()
         except:
             wx.MessageBox("No se ha podido cargar el fichero", "Error", wx.OK | wx.ICON_ERROR)
 
+        openFileDialog.Destroy()
+
+    def CambiarAVisualizar(self):
+        self.panelVisualizar.Show()
+        self.panelAlta.Hide()
+        self.panelBienvenida.Hide()
+
+        self.panelVisualizar.MostrarPrimero()
+
+        self.Layout()
+
+    def OnSave(self, event):
+        openFileDialog = wx.FileDialog(None, message='Seleccionar archivo csv. para guardar',
+            wildcard='CSV (*.csv)|*.csv|All Files|*',
+            style=wx.FD_OPEN)
+
+        #print(self.listaJuegos)
+
+        try:
+            if openFileDialog.ShowModal() == wx.ID_CANCEL:
+                return wx.ID_CANCEL
+        except Exception:
+            wx.LogError('Save failed!')
+            raise
         
-            
+        self.path = openFileDialog.GetPath()
+        
+        try:
+            myFile = open(self.path, 'w', newline='')
+            with myFile:
+                writer = csv.writer(myFile)
+                
+                writer.writerows(self.listaJuegos)
+
+            myFile.close()
+            wx.MessageBox("Guardado correcto", "Guardar datos", wx.OK | wx.ICON_INFORMATION)
+        except:
+            wx.MessageBox("No se ha podido guardar el fichero", "Error", wx.OK | wx.ICON_ERROR)
 
         openFileDialog.Destroy()
         
