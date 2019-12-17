@@ -74,6 +74,21 @@ class PanelVisualizar(wx.Panel):
 
         vbox.Add((-1, 25))
 
+        #botones de modificacion--------------------------------------------
+
+        hboxBotonesM = wx.BoxSizer(wx.HORIZONTAL)
+
+        self.btnBorrar = wx.Button(self, label='Eliminar', size = (70,30))
+        hboxBotonesM.Add(self.btnBorrar)
+        
+
+        self.Bind(wx.EVT_BUTTON, self.OnBorrar,  self.btnBorrar)
+        
+
+        vbox.Add(hboxBotonesM, flag=wx.ALIGN_CENTER|wx.BOTTOM,  border = 10)
+
+        vbox.Add((-1, 25))
+
         #botones--------------------------------------------
         hboxBotones = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -131,6 +146,29 @@ class PanelVisualizar(wx.Panel):
         self.textPubli.SetValue(row[1])
         self.textPre.SetValue(row[2])
 
+    def OnBorrar(self, event):
+        decision = wx.MessageBox("Esta seguro de eliminar este elemento?", "Borrar", wx.OK | wx.CANCEL | wx.ICON_QUESTION)
+
+        if int(decision) == 4:
+            
+            self.ventanaPrincipal.listaJuegos.pop(self.elementoActual)
+
+            print(self.elementoActual)
+            print(len(self.ventanaPrincipal.listaJuegos))
+            if self.elementoActual == len(self.ventanaPrincipal.listaJuegos):
+                self.elementoActual -= 1
+
+
+            if(len(self.ventanaPrincipal.listaJuegos) == 0):
+                self.elementoActual = 0
+
+                #cambiar el panel a uno vacio
+                #self.ventanaPrincipal.CambiarAAlta()
+            else:
+                self.MostrarDatos(self.elementoActual)
+                self.ControlDeBotones()
+                print(self.ventanaPrincipal.listaJuegos)
+            
 class PanelAlta(wx.Panel):
     def __init__(self, parent, id):
         wx.Panel.__init__(self, parent, id)
@@ -403,10 +441,7 @@ class FramePrincipal(wx.Frame):
         self.CambiarAVisualizar()
         
     def OnAlta(self, event):
-        self.panelAlta.Show()
-        self.panelVisualizar.Hide()
-        self.panelBienvenida.Hide()
-        self.Layout()
+        self.CambiarAAlta()
 
     def OnLoad(self, event):
         openFileDialog = wx.FileDialog(None, message='Cargar el archivo csv.',
@@ -439,7 +474,7 @@ class FramePrincipal(wx.Frame):
             self.CambiarAVisualizar()
             self.ActivarBotonesBarra()
 
-            var = wx.MessageBox("Carga correcta", "Carga de datos", wx.OK | wx.CANCEL | wx.ICON_INFORMATION)
+            wx.MessageBox("Carga correcta", "Carga de datos", wx.OK | wx.CANCEL | wx.ICON_INFORMATION)
             
             #4 = ok, 16 = cancel
             #print(var)
@@ -455,6 +490,13 @@ class FramePrincipal(wx.Frame):
         self.panelBienvenida.Hide()
 
         self.panelVisualizar.MostrarPrimero()
+
+        self.Layout()
+
+    def CambiarAAlta(self):
+        self.panelAlta.Show()
+        self.panelVisualizar.Hide()
+        self.panelBienvenida.Hide()
 
         self.Layout()
 
