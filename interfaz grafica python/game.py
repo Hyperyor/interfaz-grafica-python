@@ -80,9 +80,14 @@ class PanelVisualizar(wx.Panel):
 
         self.btnBorrar = wx.Button(self, label='Eliminar', size = (70,30))
         hboxBotonesM.Add(self.btnBorrar)
+
+        self.btnModif = wx.Button(self, label='Modificar', size = (70,30))
+        hboxBotonesM.Add(self.btnModif)
         
 
         self.Bind(wx.EVT_BUTTON, self.OnBorrar,  self.btnBorrar)
+
+        self.Bind(wx.EVT_BUTTON, self.OnModificar,  self.btnModif)
         
 
         vbox.Add(hboxBotonesM, flag=wx.ALIGN_CENTER|wx.BOTTOM,  border = 10)
@@ -153,8 +158,6 @@ class PanelVisualizar(wx.Panel):
             
             self.ventanaPrincipal.listaJuegos.pop(self.elementoActual)
 
-            print(self.elementoActual)
-            print(len(self.ventanaPrincipal.listaJuegos))
             if self.elementoActual == len(self.ventanaPrincipal.listaJuegos):
                 self.elementoActual -= 1
 
@@ -163,12 +166,50 @@ class PanelVisualizar(wx.Panel):
                 self.elementoActual = 0
 
                 #cambiar el panel a uno vacio
-                #self.ventanaPrincipal.CambiarAAlta()
+                self.ventanaPrincipal.CambiarAVisualizar()
             else:
                 self.MostrarDatos(self.elementoActual)
                 self.ControlDeBotones()
                 print(self.ventanaPrincipal.listaJuegos)
-            
+    
+    def OnModificar(self, event):
+        if self.DatosCorrectos():
+
+            #modificar los campos del juego modificado
+            self.ModificarLosDatos()
+
+            wx.MessageBox("Modificacion realizada correctamente, " + 
+            "guarde los datos para que se vean reflejados en el fichero", 
+            "Alta correcta", wx.OK | wx.ICON_INFORMATION)
+        else:
+            wx.MessageBox("Datos introducidos incorrectos", "Error", wx.OK | wx.ICON_ERROR)
+
+            #devolvemos los datos a su estado original
+            self.MostrarDatos(self.elementoActual)
+
+        
+    
+    def DatosCorrectos(self):
+        try:
+            if self.textTitulo.GetValue() != "":
+                if int(self.textPubli.GetValue()) >= 1982:
+                    if float(self.textPre.GetValue()) > 0:
+                        return True
+        except ValueError:
+            return False
+        
+        return False
+    
+    def ModificarLosDatos(self):
+        juego = self.ventanaPrincipal.listaJuegos[self.elementoActual]
+
+        juego[0] = self.textTitulo.GetValue()
+        juego[1] = self.textPubli.GetValue()
+        juego[2] = self.textPre.GetValue()
+
+        self.ventanaPrincipal.listaJuegos[self.elementoActual] = juego
+        
+
 class PanelAlta(wx.Panel):
     def __init__(self, parent, id):
         wx.Panel.__init__(self, parent, id)
@@ -333,6 +374,30 @@ class PanelBienvenida(wx.Panel):
 
         self.SetSizer(vbox)
 
+class PanelListaVacia(wx.Panel):
+    def __init__(self, parent, id):
+        wx.Panel.__init__(self, parent, id)
+        
+        self.inicializar()
+
+    def inicializar(self):
+
+        vbox = wx.BoxSizer(wx.VERTICAL)
+
+        vbox.Add((-1, 25))
+        vbox.Add((-1, 25))
+        vbox.Add((-1, 25))
+        vbox.Add((-1, 25))
+        #mensaje bienvenida--------------------------------------------
+        hboxNom = wx.BoxSizer(wx.HORIZONTAL)
+
+        labNombre = wx.StaticText(self, label='Listado de videojuegos vacio')
+        hboxNom.Add(labNombre, flag=wx.RIGHT, border=8)
+
+        vbox.Add(hboxNom, flag=wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_CENTER_HORIZONTAL|wx.CENTER,  border = 10)
+
+        self.SetSizer(vbox)
+
 class FramePrincipal(wx.Frame):
     def __init__(self, parent, title, style):
         # asegurar que se llame al __init__ de los padres
@@ -372,14 +437,18 @@ class FramePrincipal(wx.Frame):
 
         self.panelBienvenida = PanelBienvenida(self, -1)
 
+        self.panelVacio = PanelListaVacia(self, -1)
+
         #añadimos los paneles al frame principal
         self.caja.Add(self.panelVisualizar, 1, wx.EXPAND)
         self.caja.Add(self.panelAlta, 1, wx.EXPAND)
         self.caja.Add(self.panelBienvenida, 1, wx.EXPAND)
+        self.caja.Add(self.panelVacio, 1, wx.EXPAND)
 
         #ocultar paneles y mostrar el que toque
         self.panelVisualizar.Hide()
         self.panelAlta.Hide()
+        self.panelVacio.Hide()
         self.SetSizer(self.caja)
         self.Layout()
 
@@ -485,11 +554,19 @@ class FramePrincipal(wx.Frame):
         openFileDialog.Destroy()
 
     def CambiarAVisualizar(self):
-        self.panelVisualizar.Show()
-        self.panelAlta.Hide()
-        self.panelBienvenida.Hide()
+        
+        if len(self.listaJuegos) > 0:
+            self.panelVisualizar.Show()
+            self.panelAlta.Hide()
+            self.panelBienvenida.Hide()
+            self.panelVacio.Hide()
 
-        self.panelVisualizar.MostrarPrimero()
+            self.panelVisualizar.MostrarPrimero()
+        else:
+            self.panelVisualizar.Hide()
+            self.panelAlta.Hide()
+            self.panelBienvenida.Hide()
+            self.panelVacio.Show()
 
         self.Layout()
 
@@ -497,6 +574,7 @@ class FramePrincipal(wx.Frame):
         self.panelAlta.Show()
         self.panelVisualizar.Hide()
         self.panelBienvenida.Hide()
+        self.panelVacio.Hide()
 
         self.Layout()
 
